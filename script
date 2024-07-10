@@ -1,0 +1,215 @@
+local ImGui = loadstring(game:HttpGet("https://raw.githubusercontent.com/wiIlow/imgui-rbx/main/main.lua", true))()
+local boxespclr = Instance.new("Color3Value")
+local boxesptrs = Instance.new("IntValue")
+
+local HitboxSIZE = Instance.new("Vector3Value")
+HitboxSIZE.Parent = workspace
+HitboxSIZE.Name = "HitboxSIZE.X"
+
+boxesptrs.Value = 0
+local key = game:GetService("UserInputService")
+
+
+local Window = ImGui:Begin({
+    Name = "GOVNO.CC",
+    Width = 530,
+    Height = 400
+})
+
+
+
+local BoxESP = {}
+function BoxESP.Create(Player)
+    local Box = Drawing.new("Square")
+    Box.Visible = false
+    Box.Color = boxespclr.Value
+    Box.Filled = false
+    Box.Transparency = 1
+    Box.Thickness = 1
+
+    local Updater
+
+    local function UpdateBox()
+        if Player and Player:IsA("Model") and Player:FindFirstChild("HumanoidRootPart") and Player:FindFirstChild("Head") then
+            local Target2dPosition, IsVisible = workspace.CurrentCamera:WorldToViewportPoint(Player.HumanoidRootPart.Position)
+            local scale_factor = 1 / (Target2dPosition.Z * math.tan(math.rad(workspace.CurrentCamera.FieldOfView * 0.5)) * 2) * 100
+            local width, height = math.floor(40 * scale_factor), math.floor(62 * scale_factor)
+            Box.Color = boxespclr.Value
+            Box.Visible = IsVisible
+            Box.Transparency = boxesptrs.Value
+            Box.Size = Vector2.new(width, height)
+            Box.Position = Vector2.new(Target2dPosition.X - Box.Size.X / 2, Target2dPosition.Y - Box.Size.Y / 2)
+        else
+            Box.Visible = false
+            if not Player then
+                Box:Remove()
+                Updater:Disconnect()
+            end
+        end
+    end
+
+Updater = game:GetService("RunService").RenderStepped:Connect(UpdateBox)
+
+    return Box
+end
+
+
+
+local Boxes = {}
+
+local function EnableBoxESP()
+    for _, Player in pairs(game:GetService("Workspace"):GetChildren()) do
+        if Player:IsA("Model") and Player:FindFirstChild("HumanoidRootPart") and Player:FindFirstChild("Head") then
+            local Box = BoxESP.Create(Player)
+            table.insert(Boxes, Box)
+        end
+    end
+end
+
+game.Workspace.DescendantAdded:Connect(function(i)
+    if i:IsA("Model") and i:FindFirstChild("HumanoidRootPart") and i:FindFirstChild("Head") then
+        local Box = BoxESP.Create(i)
+        table.insert(Boxes, Box)
+    end
+end)
+
+EnableBoxESP()
+
+
+Window:CheckBox({
+    Name = "BoxESP",
+    Enabled = false,
+    OnChanged = function(value) 
+    if value == true then
+
+    boxesptrs.Value = 1
+
+    end
+
+ if value == false then
+
+    boxesptrs.Value = 0
+
+    end
+
+ 
+    end
+})
+
+
+Window:ColorPicker3({
+    Name = "Color",
+    DefaultColor = Color3.fromRGB(255, 0, 0),
+    OnChanged = function(color)
+        boxespclr.Value = color
+
+    end
+})
+
+
+Window:CheckBox({
+    Name = "Chams ESP",
+    Enabled = false,
+    OnChanged = function(value) 
+
+    if value == true then
+        
+
+
+    for i, childrik in ipairs(workspace:GetDescendants()) do
+        if childrik:FindFirstChild("HumanoidRootPart") then
+                    local g = Instance.new("Highlight")
+                    if childrik ~= game.workspace.Ignore.FPSArms then
+                    g.Parent = childrik
+                    local s = Instance.new("Highlight")
+                    s.Parent = game.ReplicatedStorage.Shared.entities.Player.Model
+
+              
+            end
+            end
+        
+
+        end
+
+        if value == false then
+        for i, childrik in ipairs(workspace:GetDescendants()) do
+        if childrik:FindFirstChild("HumanoidRootPart") then
+                    if childrik:FindFirstChild("Highlight") then
+                    childrik:FindFirstChild("Highlight"):Remove()
+                    game.ReplicatedStorage.Shared.entities.Player.Model.Highlight:Remove()
+                    
+                end
+            end
+            end
+        end
+
+
+       
+        
+
+
+        end
+
+    
+    
+
+    end
+})
+
+
+
+Window:SliderInteger({
+    Name = "JumpPower",
+    Min = 1,
+    Max = 10,
+    Default = 50,
+    OnChanged = function(value) 
+        HitboxSIZE.Value = Vector3.new(value,value,value)
+    end
+})
+
+
+
+
+Window:End()
+
+--keycode-----------------------------------------------------------------------------------------------------------------
+
+key.InputBegan:Connect(function(input)
+	if input.KeyCode == Enum.KeyCode.Z then
+		for i, childrik in ipairs(workspace:GetDescendants()) do
+        if childrik:FindFirstChild("HumanoidRootPart") then
+                    if childrik ~= game.workspace.Ignore.FPSArms then
+                    childrik.Head.Size = Vector3.new(HitboxSIZE.Value.X,HitboxSIZE.Value.Y,HitboxSIZE.Value.Z)
+                    childrik.Head.Transparency = 0.5
+                    childrik.Head.CanCollide = false
+                    end
+            end
+         end
+         end
+end)
+
+
+
+
+
+key.InputBegan:Connect(function(input)
+	if input.KeyCode == Enum.KeyCode.T then
+		if not isRunning then
+			isRunning = true
+			game.workspace.Ignore.LocalCharacter.Top.CrouchForce.LimitsEnabled = true
+            game.workspace.Ignore.LocalCharacter.Top.CrouchForce.MinLength = 10
+		end
+	end
+end)
+
+key.InputEnded:Connect(function(input)
+	if input.KeyCode == Enum.KeyCode.T then
+	game.workspace.Ignore.LocalCharacter.Top.CrouchForce.LimitsEnabled = false
+    game.workspace.Ignore.LocalCharacter.Top.CrouchForce.MinLength = 3
+		isRunning = false
+	end
+end)
+
+
+
